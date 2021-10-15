@@ -1,4 +1,5 @@
 import copy
+import random
 
 GRID_SIZE = 6
 GATE = 2
@@ -92,20 +93,65 @@ class IterativeDeepSearch:
     def doOneIteration(self):
             pass
 
+def depthSearch(uzol,limit):
+    if limit <= 0:
+        return False
+
+    if uzol.checkFin():
+        print()
+        uzol.grid.printGrid()
+        return True
+    random.shuffle(uzol.state)
+    for car in range(len(uzol.state)):
+        uzolCpy = copy.deepcopy(uzol)
+        uzolCpy.parent = uzol
+        if uzolCpy.state[car].moveLeft(uzolCpy.grid):
+            if uzolCpy.grid.table != uzol.parent.grid.table:
+                if depthSearch(uzolCpy, limit-1): return True
+        uzolCpy = copy.deepcopy(uzol)
+        uzolCpy.parent = uzol
+        if uzolCpy.state[car].moveRight(uzolCpy.grid):
+            if uzolCpy.grid.table != uzol.parent.grid.table:
+                if depthSearch(uzolCpy, limit-1): return True
+        uzolCpy = copy.deepcopy(uzol)
+        uzolCpy.parent = uzol
+        if uzolCpy.state[car].moveUp(uzolCpy.grid):
+            if uzolCpy.grid.table != uzol.parent.grid.table:
+                if depthSearch(uzolCpy, limit-1): return True
+        uzolCpy = copy.deepcopy(uzol)
+        uzolCpy.parent = uzol
+        if uzolCpy.state[car].moveDown(uzolCpy.grid):
+            if uzolCpy.grid.table != uzol.parent.grid.table:
+                if depthSearch(uzolCpy, limit-1): return True
+    # print()
+    # uzol.grid.printGrid()
+    return False
+
 def main():
     states = []
+    # states.append(Car(6, 2, 5, 2, 'h'));
+    # states.append(Car(5, 3, 1, 3, 'v'));
+    # states.append(Car(8, 3, 2, 5, 'v'));
+    # states.append(Car(1, 2, 2, 1, 'h'));
+    # states.append(Car(2, 2, 0, 0, 'h'));
+    # states.append(Car(3, 3, 1, 0, 'v'));
+    # states.append(Car(4, 2, 4, 0, 'v'));
+    # states.append(Car(7, 2, 4, 1, 'h'));
+
     states.append(Car(1, 2, 2, 1, 'h'));
     states.append(Car(2, 2, 0, 0, 'h'));
     states.append(Car(3, 3, 1, 0, 'v'));
     states.append(Car(4, 2, 4, 0, 'v'));
     states.append(Car(5, 3, 1, 3, 'v'));
-    states.append(Car(6, 3, 5, 2, 'h'));
-    states.append(Car(7, 2, 4, 4, 'h'));
-    states.append(Car(8, 3, 0, 5, 'v'));
+    states.append(Car(6, 2, 5, 2, 'h'));
+    states.append(Car(7, 2, 4, 1, 'h'));
+    states.append(Car(8, 3, 2, 5, 'v'));
 
     hlUzol = Uzol(states, None)
+    hlUzol.parent = hlUzol
     hlUzol.grid.printGrid()
-    print(hlUzol.state[4].moveUp(hlUzol.grid))
+
+    depthSearch(hlUzol,5)
 
 
 
