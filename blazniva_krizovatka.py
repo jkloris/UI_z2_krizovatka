@@ -83,7 +83,6 @@ class Grid:
 
     def printGrid(self):
         for y in range(GRID_SIZE):
-            self.table.append([])
             s=''
             for x in range(GRID_SIZE):
                 s+=str(self.table[y][x]) + ' '
@@ -97,7 +96,7 @@ class IterativeDeepSearch:
         self.limit = 0
 
         while not depthSearch(self.uzol, self.limit):
-            print(self.limit)
+            print(f"Hlbka {self.limit} prehladana")
             self.limit+=1
 
 def checkParent(me):
@@ -108,49 +107,50 @@ def checkParent(me):
         parent = parent.parent
     return True
 
-
+def printFinish(me):
+    while me != None:
+        me.grid.printGrid()
+        me = me.parent
+    return True
 
 def depthSearch(uzolStart,limit):
     tmpCounter = 0
     front = [[uzolStart, limit]]
     while len(front) > 0:
         if front[0][0].checkFin():
-            front[0][0].grid.printGrid()
+            printFinish(front[0][0])
             return True
         uzol = front.pop(0)
         tmpCounter+=1
         #uzol[0] == samotny uzol, uzol[1] je limit
         if uzol[1] < 0: continue
 
-
-        # print(len(front), limit)
-        uzol[0].grid.printGrid()
         random.shuffle(uzol[0].state)
 
         for car in range(len(uzol[0].state)):
+            uzolCpy = Uzol(uzol[0].state, uzol[0])
+            uzolCpy2 = Uzol(uzol[0].state, uzol[0])
             if uzol[0].state[car].direct == 'v':
 
-                uzolCpy = Uzol(uzol[0].state, uzol[0])
-                if uzolCpy.state[car].moveUp(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
-
-                uzolCpy = Uzol(uzol[0].state, uzol[0])
                 if uzolCpy.state[car].moveDown(uzolCpy.grid):
                     if checkParent(uzolCpy):
                         front.insert(0, [uzolCpy, uzol[1] - 1])
 
+                if uzolCpy2.state[car].moveUp(uzolCpy2.grid):
+                    if checkParent(uzolCpy2):
+                        front.insert(0, [uzolCpy2, uzol[1] - 1])
+
             elif uzol[0].state[car].direct == 'h':
 
-                uzolCpy = Uzol(uzol[0].state, uzol[0])
+                # uzolCpy = Uzol(uzol[0].state, uzol[0])
                 if uzolCpy.state[car].moveLeft(uzolCpy.grid):
                     if checkParent(uzolCpy):
                         front.insert(0, [uzolCpy, uzol[1] - 1])
 
-                uzolCpy = Uzol(uzol[0].state, uzol[0])
-                if uzolCpy.state[car].moveRight(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
+                # uzolCpy2 = Uzol(uzol[0].state, uzol[0])
+                if uzolCpy2.state[car].moveRight(uzolCpy2.grid):
+                    if checkParent(uzolCpy2):
+                        front.insert(0, [uzolCpy2, uzol[1] - 1])
 
     print(tmpCounter)
     return False
@@ -270,24 +270,24 @@ def main():
     # states.append(Car(4, 2, 4, 0, 'v'));
     # states.append(Car(7, 2, 4, 1, 'h'));
 
-    states.append(Car(1, 2, 2, 1, 'h'));
-    states.append(Car(2, 2, 0, 0, 'h'));
-    states.append(Car(3, 3, 1, 0, 'v'));
-    states.append(Car(4, 2, 4, 0, 'v'));
-    states.append(Car(5, 3, 1, 3, 'v'));
-    states.append(Car(6, 2, 5, 2, 'h'));
-    states.append(Car(7, 2, 4, 1, 'h'));
-    states.append(Car(8, 3, 2, 5, 'v'));
-
-    #vzorovy
     # states.append(Car(1, 2, 2, 1, 'h'));
     # states.append(Car(2, 2, 0, 0, 'h'));
     # states.append(Car(3, 3, 1, 0, 'v'));
     # states.append(Car(4, 2, 4, 0, 'v'));
     # states.append(Car(5, 3, 1, 3, 'v'));
-    # states.append(Car(6, 3, 5, 2, 'h'));
-    # states.append(Car(7, 2, 4, 4, 'h'));
-    # states.append(Car(8, 3, 0, 5, 'v'));
+    # states.append(Car(6, 2, 5, 2, 'h'));
+    # states.append(Car(7, 2, 4, 1, 'h'));
+    # states.append(Car(8, 3, 2, 4, 'v'));
+
+    #vzorovy
+    states.append(Car(1, 2, 2, 1, 'h'));
+    states.append(Car(2, 2, 0, 0, 'h'));
+    states.append(Car(3, 3, 1, 0, 'v'));
+    states.append(Car(4, 2, 4, 0, 'v'));
+    states.append(Car(5, 3, 1, 3, 'v'));
+    states.append(Car(6, 3, 5, 2, 'h'));
+    states.append(Car(7, 2, 4, 4, 'h'));
+    states.append(Car(8, 3, 0, 5, 'v'));
 
     hlUzol = Uzol(states, None)
     hlUzol.parent = None
