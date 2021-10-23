@@ -7,7 +7,7 @@ RED_ID = 1
 
 class Uzol:
     def __init__(self, state, parent):
-        self.state = state
+        self.state = self.copyState(state)
         self.parent = parent
         self.grid = Grid(state)
 
@@ -17,6 +17,12 @@ class Uzol:
             if self.grid.table[GATE][i] == 1:
                 return False
         return True
+
+    def copyState(self, state):
+        thisState = []
+        for i in state:
+            thisState.append(Car(i.id, i.size, i.line, i.col, i.direct))
+        return  thisState
 
 #id je od 0
 class Car:
@@ -118,6 +124,7 @@ def depthSearch(uzolStart,limit):
     front = [[uzolStart, limit]]
     while len(front) > 0:
         if front[0][0].checkFin():
+            print(tmpCounter)
             printFinish(front[0][0])
             return True
         uzol = front.pop(0)
@@ -152,55 +159,11 @@ def depthSearch(uzolStart,limit):
                     if checkParent(uzolCpy2):
                         front.insert(0, [uzolCpy2, uzol[1] - 1])
 
+
+
+
     print(tmpCounter)
     return False
-    # if limit <= 0:
-    #     if uzol.checkFin():
-    #         uzol.grid.printGrid()
-    #         return True
-    #     return False
-    #
-    #
-    # if uzol.checkFin():
-    #     uzol.grid.printGrid()
-    #     return True
-    #
-    # random.shuffle(uzol.state)
-    #
-    # for car in range(len(uzol.state)):
-    #     print("_____________", car)
-    #
-    #     uzolCpy = Uzol(uzol.state, uzol)
-    #     if uzolCpy.state[car].moveLeft(uzolCpy.grid):
-    #         print("L")
-    #         uzolCpy.grid.printGrid()
-    #         if checkParent(uzolCpy):
-    #             if depthSearch(uzolCpy, limit-1): return True
-    #
-    #     uzolCpy = Uzol(uzol.state, uzol)
-    #     if uzolCpy.state[car].moveRight(uzolCpy.grid):
-    #         print("R")
-    #         uzolCpy.grid.printGrid()
-    #         if checkParent(uzolCpy):
-    #             if depthSearch(uzolCpy, limit-1): return True
-    #
-    #     uzolCpy = Uzol(uzol.state, uzol)
-    #     if uzolCpy.state[car].moveUp(uzolCpy.grid):
-    #         print("U")
-    #         uzolCpy.grid.printGrid()
-    #         if checkParent(uzolCpy):
-    #             if depthSearch(uzolCpy, limit-1): return True
-    #
-    #     uzolCpy = Uzol(uzol.state, uzol)
-    #     if uzolCpy.state[car].moveDown(uzolCpy.grid):
-    #         print("D")
-    #         uzolCpy.grid.printGrid()
-    #         if checkParent(uzolCpy):
-    #             if depthSearch(uzolCpy, limit-1): return True
-    #
-    # return False
-
-
 
 
 # class Hash:
@@ -258,8 +221,6 @@ def depthSearch(uzolStart,limit):
 
 def main():
 
-
-
     states = []
     # states.append(Car(6, 2, 5, 2, 'h'));
     # states.append(Car(5, 3, 1, 3, 'v'));
@@ -288,6 +249,16 @@ def main():
     states.append(Car(6, 3, 5, 2, 'h'));
     states.append(Car(7, 2, 4, 4, 'h'));
     states.append(Car(8, 3, 0, 5, 'v'));
+
+    # states.append(Car(1, 2, 2, 1, 'h'));
+    # states.append(Car(2, 2, 0, 0, 'h'));
+    # states.append(Car(3, 3, 1, 0, 'v'));
+    # states.append(Car(4, 2, 4, 0, 'v'));
+    # states.append(Car(5, 3, 1, 3, 'v'));
+    # states.append(Car(6, 3, 5, 2, 'h'));
+    # states.append(Car(7, 2, 4, 4, 'h'));
+    # states.append(Car(8, 3, 0, 5, 'v'));
+    # states.append(Car(9, 2, 0, 4, 'v'));
 
     hlUzol = Uzol(states, None)
     hlUzol.parent = None
