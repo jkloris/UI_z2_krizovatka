@@ -165,22 +165,27 @@ def depthSearch(uzolStart,limit):
             if uzol[0].state[car].direct == 'v':
 
                 while uzolCpy.state[car].moveDown(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
+                    pass
+                if checkParent(uzolCpy):
+                    front.insert(0, [uzolCpy, uzol[1] - 1])
 
                 while uzolCpy2.state[car].moveUp(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
+                    pass
+                if checkParent(uzolCpy2):
+                    front.insert(0, [uzolCpy2, uzol[1] - 1])
 
             elif uzol[0].state[car].direct == 'h':
 
                 while uzolCpy.state[car].moveLeft(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
+                    pass
+                if checkParent(uzolCpy):
+                    front.insert(0, [uzolCpy, uzol[1] - 1])
 
                 while uzolCpy2.state[car].moveRight(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
+                    pass
+
+                if checkParent(uzolCpy2):
+                    front.insert(0, [uzolCpy2, uzol[1] - 1])
 
 
 
@@ -256,13 +261,13 @@ def main():
     # states.append(Car(7, 2, 4, 1, 'h'));
 
     # states.append(Car(1, 2, 2, 1, 'h'));
-    # states.append(Car(2, 2, 0, 0, 'h'));
-    # states.append(Car(3, 3, 1, 0, 'v'));
-    # states.append(Car(4, 2, 4, 0, 'v'));
-    # states.append(Car(5, 3, 1, 3, 'v'));
-    # states.append(Car(6, 2, 5, 2, 'h'));
-    # states.append(Car(7, 2, 4, 1, 'h'));
-    # states.append(Car(8, 3, 2, 4, 'v'));
+    # states.append(Car(2, 3, 0, 0, 'v'));
+    # states.append(Car(3, 2, 3, 0, 'v'));
+    # states.append(Car(4, 2, 5, 0, 'h'));
+    # states.append(Car(5, 2, 1, 3, 'v'));
+    # states.append(Car(6, 3, 0, 1, 'h'));
+    # states.append(Car(7, 4, 4, 1, 'h'));
+    # states.append(Car(8, 3, 0, 5, 'v'));
 
     #vzorovy
     states.append(Car(1, 2, 2, 1, 'h'));
@@ -291,14 +296,9 @@ def main():
     hlUzol.parent = None
     hlUzol.grid.printGrid()
 
-    a = Uzol(hlUzol.state, hlUzol)
-    a.grid = Grid(hlUzol.grid.table, "Table")
-
-    a.state[1].moveRight(a.grid)
-    # depthSearch(hlUzol,4)
-    print("")
+    start = time.time()
     search = IterativeDeepSearch(hlUzol)
-
+    print(f"Celkovy cas hladania: {time.time() - start}")
 
 
 
