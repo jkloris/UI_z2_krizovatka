@@ -29,6 +29,37 @@ class Uzol:
             thisState.append(Car(i.id, i.size, i.line, i.col, i.direct))
         return thisState
 
+    def recreateGrid(self, seq):
+        table = []
+        offset = len(self.state)*[0]
+        for y in range(GRID_SIZE):
+            table.append(self.grid.table[y][:])
+
+        for step in seq:
+            if type(step) == int:
+                return [table, offset]
+            car = int(step[0])
+
+            if step[1] == 'R':
+                moveRight(self.state[car], table, offset[car])
+                offset[car]+=1
+                continue
+            elif step[1] == 'L':
+                moveLeft(self.state[car], table, offset[car])
+                offset[car] -= 1
+                continue
+            elif step[1] == 'D':
+                moveDown(self.state[car], table, offset[car])
+                offset[car] += 1
+                continue
+            elif step[1] == 'U':
+                moveUp(self.state[car], table, offset[car])
+                offset[car] -= 1
+                continue
+
+
+
+
 #id je od 0
 class Car:
     def __init__(self, id, size, line, col, direct):
@@ -75,6 +106,43 @@ class Car:
             return True
         return False
 
+def moveLeft(car, table, offset):
+    table[car.line][car.col+ offset - 1 ] = 1
+    table[car.line][car.col + offset + car.size-1] = 0
+
+def moveRight(car, table, offset):
+    table[car.line][car.col + offset + car.size] = 1
+    table[car.line][car.col + offset] = 0
+
+def moveUp(car, table, offset):
+    table[car.line + offset - 1][car.col] = 1
+    table[car.line + offset + car.size - 1][car.col] = 0
+
+def moveDown(car, table, offset):
+    table[car.line + offset + car.size][car.col] = 1
+    table[car.line + offset][car.col] = 0
+
+
+def checkLeft(car, table, offset):
+    if car.direct == 'h' and car.col + offset > 0 and table[car.line][car.col + offset - 1] == 0:
+        return True
+    return False
+
+def checkRight(car, table, offset):
+    if car.direct == 'h' and car.col + offset + car.size < GRID_SIZE and table[car.line][car.col + offset + car.size] == 0:
+        return True
+    return False
+
+def checkUp(car, table, offset):
+    if car.direct == 'v' and car.line + offset > 0 and table[car.line + offset - 1][car.col] == 0:
+        return True
+    return False
+
+def checkDown(car, table, offset):
+    if car.direct == 'v' and car.line + offset + car.size < GRID_SIZE and table[car.line + offset + car.size][car.col] == 0:
+        return True
+    return False
+
 class Grid:
     def __init__(self, item, flag):
         self.table = []
@@ -109,6 +177,9 @@ class Grid:
             print(s)
         print()
 
+
+
+
 class IterativeDeepSearch:
 
     def __init__(self, uzol):
@@ -127,6 +198,29 @@ def checkParent(me):
         parent = parent.parent
     return True
 
+def checkParent2(seq, offset):
+    parent = seq[:]
+    offsetCpy = offset[:]
+    while len(parent)>1:
+        if offsetCpy == offset and len(parent) != len(seq):
+            return False
+        a = parent.pop(0)
+        car = int(a[0])
+        if a[1] == 'R':
+            offsetCpy[car]-=1
+            continue
+        elif a[1] == 'L':
+            offsetCpy[car]+=1
+            continue
+        elif a[1] == 'U':
+            offsetCpy[car]+=1
+            continue
+        elif a[1] == 'D':
+            offsetCpy[car]-=1
+            continue
+
+    return True
+
 def printFinish(me):
     while me != None:
         me.grid.printGrid()
@@ -139,19 +233,25 @@ def depthSearch(uzolStart,limit):
     otherTime = time.time()
 
     front = [[uzolStart, limit]]
+    front2 = [[limit]]
     while len(front) > 0:
         if front[0][0].checkFin():
             print(tmpCounter)
             printFinish(front[0][0])
+            print(front2[0])
+
             return True
 
         uzol = front.pop(0)
+
+        rad = front2.pop(0)
         tmpCounter+=1
 
         #uzol[0] == samotny uzol, uzol[1] je limit
         if uzol[1] < 0: continue
 
-        random.shuffle(uzol[0].state)
+        # random.shuffle(uzol[0].state)
+        cpyTable, offset = uzolStart.recreateGrid(rad)
 
         for car in range(len(uzol[0].state)):
 
@@ -162,33 +262,53 @@ def depthSearch(uzolStart,limit):
             uzolCpy2.grid = Grid(uzol[0].grid.table, "Table")
             uzolTime += time.time()-start
 
+            copy1 = rad[:]
+            copy2 = rad[:]
+
+
             if uzol[0].state[car].direct == 'v':
+                if uzolCpy.state[car].moveDown(uzolCpy.grid):
+                    if checkParent(uzolCpy):
+                        front.insert(0, [uzolCpy, uzol[1] - 1])
 
-                while uzolCpy.state[car].moveDown(uzolCpy.grid):
-                    pass
-                if checkParent(uzolCpy):
-                    front.insert(0, [uzolCpy, uzol[1] - 1])
+                if checkDown(uzolStart.state[car], cpyTable, offset[car]):
+                    if checkParent2(copy1, offset):
+                        copy1.insert(-1, f"{car}D")
+                        copy1[-1] = copy1[-1] - 1
+                        front2.insert(0, copy1)
 
-                while uzolCpy2.state[car].moveUp(uzolCpy2.grid):
-                    pass
-                if checkParent(uzolCpy2):
-                    front.insert(0, [uzolCpy2, uzol[1] - 1])
+
+                if uzolCpy2.state[car].moveUp(uzolCpy2.grid):
+                    if checkParent(uzolCpy2):
+                        front.insert(0, [uzolCpy2, uzol[1] - 1])
+
+                if checkUp(uzolStart.state[car], cpyTable, offset[car]):
+                    if checkParent2(copy2, offset):
+                        copy2.insert(-1, f"{car}U")
+                        copy2[-1] = copy2[-1] - 1
+                        front2.insert(0, copy2)
 
             elif uzol[0].state[car].direct == 'h':
 
-                while uzolCpy.state[car].moveLeft(uzolCpy.grid):
-                    pass
-                if checkParent(uzolCpy):
-                    front.insert(0, [uzolCpy, uzol[1] - 1])
+                if uzolCpy.state[car].moveLeft(uzolCpy.grid):
+                    if checkParent(uzolCpy):
+                        front.insert(0, [uzolCpy, uzol[1] - 1])
 
-                while uzolCpy2.state[car].moveRight(uzolCpy2.grid):
-                    pass
+                if checkLeft(uzolStart.state[car], cpyTable, offset[car]):
+                    if checkParent2(copy1, offset):
+                        copy1.insert(-1, f"{car}L")
+                        copy1[-1] = copy1[-1] - 1
+                        front2.insert(0, copy1)
 
-                if checkParent(uzolCpy2):
-                    front.insert(0, [uzolCpy2, uzol[1] - 1])
+                if uzolCpy2.state[car].moveRight(uzolCpy2.grid):
+                    if checkParent(uzolCpy2):
+                        front.insert(0, [uzolCpy2, uzol[1] - 1])
 
-
-
+                if checkRight(uzolStart.state[car], cpyTable, offset[car]):
+                    if checkParent2(copy2, offset):
+                        copy2.insert(-1, f"{car}R")
+                        copy2[-1] = copy2[-1] - 1
+                        front2.insert(0, copy2)
 
     print(tmpCounter, uzolTime, time.time()-otherTime-uzolTime)
     copyTime = 0
@@ -277,7 +397,7 @@ def main():
     states.append(Car(5, 3, 1, 3, 'v'));
     states.append(Car(6, 3, 5, 2, 'h'));
     states.append(Car(7, 2, 4, 4, 'h'));
-    states.append(Car(8, 3, 0, 5, 'v'));
+    # states.append(Car(8, 3, 0, 5, 'v'));
 
 
 
