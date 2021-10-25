@@ -39,22 +39,23 @@ class Uzol:
             if type(step) == int:
                 return [table, offset]
             car = int(step[0])
+            dist = int(step[2])
 
             if step[1] == 'R':
-                moveRight(self.state[car], table, offset[car])
-                offset[car]+=1
+                moveRight(self.state[car], table, offset[car], dist)
+                offset[car]+=dist
                 continue
             elif step[1] == 'L':
-                moveLeft(self.state[car], table, offset[car])
-                offset[car] -= 1
+                moveLeft(self.state[car], table, offset[car], dist)
+                offset[car] -= dist
                 continue
             elif step[1] == 'D':
-                moveDown(self.state[car], table, offset[car])
-                offset[car] += 1
+                moveDown(self.state[car], table, offset[car], dist)
+                offset[car] += dist
                 continue
             elif step[1] == 'U':
-                moveUp(self.state[car], table, offset[car])
-                offset[car] -= 1
+                moveUp(self.state[car], table, offset[car], dist)
+                offset[car] -= dist
                 continue
 
 
@@ -106,21 +107,21 @@ class Car:
             return True
         return False
 
-def moveLeft(car, table, offset):
-    table[car.line][car.col+ offset - 1 ] = 1
-    table[car.line][car.col + offset + car.size-1] = 0
+def moveLeft(car, table, offset, dist):
+    table[car.line][car.col+ offset - dist ] = 1
+    table[car.line][car.col + offset + car.size-dist] = 0
 
-def moveRight(car, table, offset):
-    table[car.line][car.col + offset + car.size] = 1
-    table[car.line][car.col + offset] = 0
+def moveRight(car, table, offset, dist):
+    table[car.line][car.col + offset + car.size + dist - 1] = 1
+    table[car.line][car.col + offset + dist - 1] = 0
 
-def moveUp(car, table, offset):
-    table[car.line + offset - 1][car.col] = 1
-    table[car.line + offset + car.size - 1][car.col] = 0
+def moveUp(car, table, offset, dist):
+    table[car.line + offset - dist][car.col] = 1
+    table[car.line + offset + car.size - dist][car.col] = 0
 
-def moveDown(car, table, offset):
-    table[car.line + offset + car.size][car.col] = 1
-    table[car.line + offset][car.col] = 0
+def moveDown(car, table, offset, dist):
+    table[car.line + offset + car.size + dist - 1][car.col] = 1
+    table[car.line + offset + dist - 1][car.col] = 0
 
 
 def checkLeft(car, table, offset):
@@ -206,17 +207,18 @@ def checkParent2(seq, offset):
             return False
         a = parent.pop(-2)
         car = int(a[0])
+        dist = int(a[2])
         if a[1] == 'R':
-            offsetCpy[car]-=1
+            offsetCpy[car]-=dist
             continue
         elif a[1] == 'L':
-            offsetCpy[car]+=1
+            offsetCpy[car]+=dist
             continue
         elif a[1] == 'U':
-            offsetCpy[car]+=1
+            offsetCpy[car]+=dist
             continue
         elif a[1] == 'D':
-            offsetCpy[car]-=1
+            offsetCpy[car]-=dist
             continue
     if offsetCpy == offset:
         return False
@@ -240,87 +242,80 @@ def depthSearch(uzolStart,limit):
     uzolTime = 0
     otherTime = time.time()
 
-    front = [[uzolStart, limit]]
     front2 = [[limit]]
-    while len(front) > 0:
-        # if front[0][0].checkFin():
-        #     print(tmpCounter)
-        #     printFinish(front[0][0])
-        #     print(front2[0])
-        #
-        #     return True
-
-        uzol = front.pop(0)
-
+    while len(front2) > 0:
 
         rad = front2.pop(0)
         tmpCounter+=1
 
-        #uzol[0] == samotny uzol, uzol[1] je limit
-
-        # random.shuffle(uzol[0].state)
         cpyTable, offset = uzolStart.recreateGrid(rad)
         if checkFin(cpyTable, uzolStart.state[0], offset[0]):
             print(rad)
             return True
         if rad[-1] < 0:  continue
 
-        for car in range(len(uzol[0].state)):
-
-            start = time.time()
-            uzolCpy = Uzol(uzol[0].state, uzol[0])
-            uzolCpy.grid = Grid(uzol[0].grid.table, "Table")
-            uzolCpy2 = Uzol(uzol[0].state, uzol[0])
-            uzolCpy2.grid = Grid(uzol[0].grid.table, "Table")
-            uzolTime += time.time()-start
+        for car in range(len(uzolStart.state)):
 
             copy1 = rad[:]
             copy2 = rad[:]
 
 
-            if uzol[0].state[car].direct == 'v':
-                if uzolCpy.state[car].moveDown(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
-
-                if checkDown(uzolStart.state[car], cpyTable, offset[car]):
-                    copy1.insert(-1, f"{car}D")
-                    if checkParent2(copy1, offset):
-                        copy1[-1] = copy1[-1] - 1
+            if uzolStart.state[car].direct == 'v':
+                offsetCpy = offset[:]
+                flag =1
+                while checkDown(uzolStart.state[car], cpyTable, offsetCpy[car]):
+                    if flag ==1:
+                        copy1.insert(-1, f"{car}D1")
+                        flag += 1
+                    else:
+                        copy1[-2]=copy1[-2][:2]+str(flag)
+                    if checkParent2(copy1, offsetCpy):
+                        offsetCpy[car]+=1
+                        copy1[-1] = rad[-1] - 1
                         front2.insert(0, copy1)
+                    else: break
 
-
-                if uzolCpy2.state[car].moveUp(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
-
-                if checkUp(uzolStart.state[car], cpyTable, offset[car]):
-                    copy2.insert(-1, f"{car}U")
-                    if checkParent2(copy2, offset):
-                        copy2[-1] = copy2[-1] - 1
+                offsetCpy = offset[:]
+                flag = 1
+                while checkUp(uzolStart.state[car], cpyTable, offsetCpy[car]):
+                    if flag == 1:
+                        copy2.insert(-1, f"{car}U1")
+                        flag+=1
+                    else:
+                        copy2[-2] = copy2[-2][:2] + str(flag)
+                    if checkParent2(copy2, offsetCpy):
+                        offsetCpy[car] -= 1
+                        copy2[-1] = rad[-1] - 1
                         front2.insert(0, copy2)
+                    else: break
 
-            elif uzol[0].state[car].direct == 'h':
-
-                if uzolCpy.state[car].moveLeft(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
-
-                if checkLeft(uzolStart.state[car], cpyTable, offset[car]):
-                    copy1.insert(-1, f"{car}L")
-                    if checkParent2(copy1, offset):
-                        copy1[-1] = copy1[-1] - 1
+            elif uzolStart.state[car].direct == 'h':
+                offsetCpy = offset[:]
+                flag = 1
+                while checkLeft(uzolStart.state[car], cpyTable, offsetCpy[car]):
+                    if flag ==1:
+                        copy1.insert(-1, f"{car}L1")
+                        flag+=1
+                    else:
+                        copy1[-2] = copy1[-2][:2] + str(flag)
+                    if checkParent2(copy1, offsetCpy):
+                        offsetCpy[car] -= 1
+                        copy1[-1] = rad[-1] - 1
                         front2.insert(0, copy1)
-
-                if uzolCpy2.state[car].moveRight(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
-
-                if checkRight(uzolStart.state[car], cpyTable, offset[car]):
-                    copy2.insert(-1, f"{car}R")
-                    if checkParent2(copy2, offset):
-                        copy2[-1] = copy2[-1] - 1
+                    else: break
+                flag = 1
+                offsetCpy = offset[:]
+                while checkRight(uzolStart.state[car], cpyTable, offsetCpy[car]):
+                    if flag == 1:
+                        copy2.insert(-1, f"{car}R1")
+                        flag+=1
+                    else:
+                        copy2[-2] = copy2[-2][:2] + str(flag)
+                    if checkParent2(copy2, offsetCpy):
+                        offsetCpy[car] += 1
+                        copy2[-1] = rad[-1] - 1
                         front2.insert(0, copy2)
+                    else: break
 
     print(tmpCounter, uzolTime, time.time()-otherTime-uzolTime)
     copyTime = 0
