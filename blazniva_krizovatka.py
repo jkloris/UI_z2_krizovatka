@@ -204,7 +204,7 @@ def checkParent2(seq, offset):
     while len(parent)>1:
         if offsetCpy == offset and len(parent) != len(seq):
             return False
-        a = parent.pop(0)
+        a = parent.pop(-2)
         car = int(a[0])
         if a[1] == 'R':
             offsetCpy[car]-=1
@@ -218,7 +218,8 @@ def checkParent2(seq, offset):
         elif a[1] == 'D':
             offsetCpy[car]-=1
             continue
-
+    if offsetCpy == offset:
+        return False
     return True
 
 def printFinish(me):
@@ -248,7 +249,7 @@ def depthSearch(uzolStart,limit):
         tmpCounter+=1
 
         #uzol[0] == samotny uzol, uzol[1] je limit
-        if uzol[1] < 0: continue
+        if uzol[1] < 0 or rad[-1] < 0:  continue
 
         # random.shuffle(uzol[0].state)
         cpyTable, offset = uzolStart.recreateGrid(rad)
@@ -272,8 +273,8 @@ def depthSearch(uzolStart,limit):
                         front.insert(0, [uzolCpy, uzol[1] - 1])
 
                 if checkDown(uzolStart.state[car], cpyTable, offset[car]):
+                    copy1.insert(-1, f"{car}D")
                     if checkParent2(copy1, offset):
-                        copy1.insert(-1, f"{car}D")
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
@@ -283,8 +284,8 @@ def depthSearch(uzolStart,limit):
                         front.insert(0, [uzolCpy2, uzol[1] - 1])
 
                 if checkUp(uzolStart.state[car], cpyTable, offset[car]):
+                    copy2.insert(-1, f"{car}U")
                     if checkParent2(copy2, offset):
-                        copy2.insert(-1, f"{car}U")
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
@@ -295,8 +296,8 @@ def depthSearch(uzolStart,limit):
                         front.insert(0, [uzolCpy, uzol[1] - 1])
 
                 if checkLeft(uzolStart.state[car], cpyTable, offset[car]):
+                    copy1.insert(-1, f"{car}L")
                     if checkParent2(copy1, offset):
-                        copy1.insert(-1, f"{car}L")
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
@@ -305,8 +306,8 @@ def depthSearch(uzolStart,limit):
                         front.insert(0, [uzolCpy2, uzol[1] - 1])
 
                 if checkRight(uzolStart.state[car], cpyTable, offset[car]):
+                    copy2.insert(-1, f"{car}R")
                     if checkParent2(copy2, offset):
-                        copy2.insert(-1, f"{car}R")
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
