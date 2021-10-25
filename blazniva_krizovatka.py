@@ -177,7 +177,11 @@ class Grid:
             print(s)
         print()
 
-
+def copyTable(table):
+    cpy = []
+    for y in range(GRID_SIZE):
+        cpy.append(table[y][:])
+    return cpy
 
 
 class IterativeDeepSearch:
@@ -199,6 +203,7 @@ def checkParent(me):
     return True
 
 def checkParent2(seq, offset):
+
     parent = seq[:]
     offsetCpy = offset[:]
     while len(parent)>1:
@@ -236,41 +241,50 @@ def printFinish(me):
     return True
 
 def depthSearch(uzolStart,limit):
+    _hash = Hash()
     tmpCounter = 0
-    uzolTime = 0
-    otherTime = time.time()
+    tableTimer =0
+    timer = time.time()
 
     front2 = [[limit]]
     while len(front2) > 0:
 
         rad = front2.pop(0)
+
+        start = time.time()
+        cpyTable, offset = uzolStart.recreateGrid(rad)
+        # if _hash.addState(cpyTable):
+        #     continue
         tmpCounter+=1
 
-        cpyTable, offset = uzolStart.recreateGrid(rad)
         if checkFin(cpyTable, uzolStart.state[0], offset[0]):
             print(rad)
             return True
         if rad[-1] < 0:  continue
+        tableTimer += time.time() -start
 
         for car in range(len(uzolStart.state)):
 
-
             copy1 = rad[:]
             copy2 = rad[:]
-
 
             if uzolStart.state[car].direct == 'v':
 
                 if checkDown(uzolStart.state[car], cpyTable, offset[car]):
                     copy1.insert(-1, f"{car}D")
-                    if checkParent2(copy1, offset):
+                    tblHash = copyTable(cpyTable)
+                    moveDown(uzolStart.state[car], tblHash, offset[car])
+                    if _hash.addState(tblHash):
+                    # if checkParent2(copy1, offset):
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
-
                 if checkUp(uzolStart.state[car], cpyTable, offset[car]):
                     copy2.insert(-1, f"{car}U")
-                    if checkParent2(copy2, offset):
+                    tblHash = copyTable(cpyTable)
+                    moveUp(uzolStart.state[car], tblHash, offset[car])
+                    if _hash.addState(tblHash):
+                    # if checkParent2(copy2, offset):
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
@@ -278,72 +292,71 @@ def depthSearch(uzolStart,limit):
 
                 if checkLeft(uzolStart.state[car], cpyTable, offset[car]):
                     copy1.insert(-1, f"{car}L")
-                    if checkParent2(copy1, offset):
+                    tblHash = copyTable(cpyTable)
+                    moveLeft(uzolStart.state[car], tblHash, offset[car])
+                    if _hash.addState(tblHash):
+                    # if checkParent2(copy1, offset):
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
                 if checkRight(uzolStart.state[car], cpyTable, offset[car]):
                     copy2.insert(-1, f"{car}R")
-                    if checkParent2(copy2, offset):
+                    tblHash = copyTable(cpyTable)
+                    moveRight(uzolStart.state[car], tblHash, offset[car])
+                    if _hash.addState(tblHash):
+                    # if checkParent2(copy2, offset):
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
-    print(tmpCounter, uzolTime, time.time()-otherTime-uzolTime)
-    copyTime = 0
+    print(tmpCounter, tableTimer, time.time() - timer - tableTimer)
+
     return False
 
 
-# class Hash:
-#
-#
-#     def __init__(self):
-#         self.plnka = 0
-#         self.hashTable = [None] * 1001
-#
-#     def getHash(self, state):
-#         x = 0
-#         for car in state:
-#             x += (car.col + car.line*37 + ord(car.direct) ) * state.index(car)*car.size
-#
-#         return x % len(self.hashTable)
-#
-#     # returns True if state1 == state2
-#     def cmpState(self, state1, state2):
-#         for i in range(len(state1)):
-#             if state1[i] != state2[i]:
-#                 return False
-#         return True
-#
-#
-#
-#     def addState(self, state):
-#         x = self.getHash(state)
-#
-#         while self.hashTable[x] != None:
-#             if self.cmpState(self.hashTable[x], state):
-#                 print("Zhoda")
-#                 return False
-#             x = x+1 if x<len(self.hashTable)-1 else 0
-#
-#         self.hashTable[x] = state
-#         self.plnka+=1
-#
-#         if self.plnka / len(self.hashTable) > 0.5:
-#             self.rehash()
-#         return True
-#
-#     def rehash(self):
-#         tmpTable = [None] * len(self.hashTable)*2
-#         for i in self.hashTable:
-#             if i == None:
-#                 continue
-#             x = self.getHash(i)
-#             while tmpTable[x] != None:
-#                 x = x + 1 if x < len(tmpTable) - 1 else 0
-#
-#             tmpTable[x] = i
-#
-#         self.hashTable = tmpTable
+
+class Hash:
+
+
+    def __init__(self):
+        self.plnka = 0
+        self.hashTable = [None] * 100001
+
+    def getHash(self, grid):
+        x = 0
+        for i in range(GRID_SIZE):
+            x+=hash(tuple(grid[i]))*i
+
+        return x % len(self.hashTable)
+
+
+    def addState(self, state):
+        x = self.getHash(state)
+
+        while self.hashTable[x] != None:
+            a = self.hashTable[x]
+            if self.hashTable[x] == state:
+                return False
+            x = x+1 if x<len(self.hashTable)-1 else 0
+
+        self.hashTable[x] = state
+        self.plnka+=1
+
+        if self.plnka / len(self.hashTable) > 0.5:
+            self.rehash()
+        return True
+
+    def rehash(self):
+        tmpTable = [None] * len(self.hashTable)*2
+        for i in self.hashTable:
+            if i == None:
+                continue
+            x = self.getHash(i)
+            while tmpTable[x] != None:
+                x = x + 1 if x < len(tmpTable) - 1 else 0
+
+            tmpTable[x] = i
+
+        self.hashTable = tmpTable
 
 
 def main():
@@ -375,7 +388,7 @@ def main():
     states.append(Car(5, 3, 1, 3, 'v'));
     states.append(Car(6, 3, 5, 2, 'h'));
     states.append(Car(7, 2, 4, 4, 'h'));
-    # states.append(Car(8, 3, 0, 5, 'v'));
+    states.append(Car(8, 3, 0, 5, 'v'));
 
 
 
