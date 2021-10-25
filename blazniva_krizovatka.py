@@ -253,15 +253,14 @@ def depthSearch(uzolStart,limit):
 
         start = time.time()
         cpyTable, offset = uzolStart.recreateGrid(rad)
-        # if _hash.addState(cpyTable):
-        #     continue
+
         tmpCounter+=1
 
         if checkFin(cpyTable, uzolStart.state[0], offset[0]):
             print(rad)
             return True
         if rad[-1] < 0:  continue
-        tableTimer += time.time() -start
+        tableTimer += time.time() - start
 
         for car in range(len(uzolStart.state)):
 
@@ -274,8 +273,8 @@ def depthSearch(uzolStart,limit):
                     copy1.insert(-1, f"{car}D")
                     tblHash = copyTable(cpyTable)
                     moveDown(uzolStart.state[car], tblHash, offset[car])
-                    if _hash.addState(tblHash):
-                    # if checkParent2(copy1, offset):
+
+                    if _hash.addState(tblHash, copy1[-1]):
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
@@ -283,8 +282,8 @@ def depthSearch(uzolStart,limit):
                     copy2.insert(-1, f"{car}U")
                     tblHash = copyTable(cpyTable)
                     moveUp(uzolStart.state[car], tblHash, offset[car])
-                    if _hash.addState(tblHash):
-                    # if checkParent2(copy2, offset):
+
+                    if _hash.addState(tblHash, copy2[-1]):
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
@@ -294,8 +293,8 @@ def depthSearch(uzolStart,limit):
                     copy1.insert(-1, f"{car}L")
                     tblHash = copyTable(cpyTable)
                     moveLeft(uzolStart.state[car], tblHash, offset[car])
-                    if _hash.addState(tblHash):
-                    # if checkParent2(copy1, offset):
+
+                    if _hash.addState(tblHash, copy1[-1]):
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
 
@@ -303,8 +302,8 @@ def depthSearch(uzolStart,limit):
                     copy2.insert(-1, f"{car}R")
                     tblHash = copyTable(cpyTable)
                     moveRight(uzolStart.state[car], tblHash, offset[car])
-                    if _hash.addState(tblHash):
-                    # if checkParent2(copy2, offset):
+
+                    if _hash.addState(tblHash, copy2[-1]):
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
@@ -329,16 +328,16 @@ class Hash:
         return x % len(self.hashTable)
 
 
-    def addState(self, state):
+    def addState(self, state, depth):
         x = self.getHash(state)
 
         while self.hashTable[x] != None:
             a = self.hashTable[x]
-            if self.hashTable[x] == state:
+            if self.hashTable[x][0] == state and self.hashTable[x][1] >= depth:
                 return False
             x = x+1 if x<len(self.hashTable)-1 else 0
 
-        self.hashTable[x] = state
+        self.hashTable[x] = [state, depth]
         self.plnka+=1
 
         if self.plnka / len(self.hashTable) > 0.5:
