@@ -240,48 +240,26 @@ def depthSearch(uzolStart,limit):
     uzolTime = 0
     otherTime = time.time()
 
-    front = [[uzolStart, limit]]
     front2 = [[limit]]
-    while len(front) > 0:
-        # if front[0][0].checkFin():
-        #     print(tmpCounter)
-        #     printFinish(front[0][0])
-        #     print(front2[0])
-        #
-        #     return True
-
-        uzol = front.pop(0)
-
+    while len(front2) > 0:
 
         rad = front2.pop(0)
         tmpCounter+=1
 
-        #uzol[0] == samotny uzol, uzol[1] je limit
-
-        # random.shuffle(uzol[0].state)
         cpyTable, offset = uzolStart.recreateGrid(rad)
         if checkFin(cpyTable, uzolStart.state[0], offset[0]):
             print(rad)
             return True
         if rad[-1] < 0:  continue
 
-        for car in range(len(uzol[0].state)):
+        for car in range(len(uzolStart.state)):
 
-            start = time.time()
-            uzolCpy = Uzol(uzol[0].state, uzol[0])
-            uzolCpy.grid = Grid(uzol[0].grid.table, "Table")
-            uzolCpy2 = Uzol(uzol[0].state, uzol[0])
-            uzolCpy2.grid = Grid(uzol[0].grid.table, "Table")
-            uzolTime += time.time()-start
 
             copy1 = rad[:]
             copy2 = rad[:]
 
 
-            if uzol[0].state[car].direct == 'v':
-                if uzolCpy.state[car].moveDown(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
+            if uzolStart.state[car].direct == 'v':
 
                 if checkDown(uzolStart.state[car], cpyTable, offset[car]):
                     copy1.insert(-1, f"{car}D")
@@ -290,31 +268,19 @@ def depthSearch(uzolStart,limit):
                         front2.insert(0, copy1)
 
 
-                if uzolCpy2.state[car].moveUp(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
-
                 if checkUp(uzolStart.state[car], cpyTable, offset[car]):
                     copy2.insert(-1, f"{car}U")
                     if checkParent2(copy2, offset):
                         copy2[-1] = copy2[-1] - 1
                         front2.insert(0, copy2)
 
-            elif uzol[0].state[car].direct == 'h':
-
-                if uzolCpy.state[car].moveLeft(uzolCpy.grid):
-                    if checkParent(uzolCpy):
-                        front.insert(0, [uzolCpy, uzol[1] - 1])
+            elif uzolStart.state[car].direct == 'h':
 
                 if checkLeft(uzolStart.state[car], cpyTable, offset[car]):
                     copy1.insert(-1, f"{car}L")
                     if checkParent2(copy1, offset):
                         copy1[-1] = copy1[-1] - 1
                         front2.insert(0, copy1)
-
-                if uzolCpy2.state[car].moveRight(uzolCpy2.grid):
-                    if checkParent(uzolCpy2):
-                        front.insert(0, [uzolCpy2, uzol[1] - 1])
 
                 if checkRight(uzolStart.state[car], cpyTable, offset[car]):
                     copy2.insert(-1, f"{car}R")
