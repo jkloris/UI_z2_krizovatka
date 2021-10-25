@@ -222,6 +222,13 @@ def checkParent2(seq, offset):
         return False
     return True
 
+
+def checkFin(table, red_i, offset):
+    for i in range(red_i.col + offset + red_i.size, GRID_SIZE):
+        if table[GATE][i] == 1:
+            return False
+    return True
+
 def printFinish(me):
     while me != None:
         me.grid.printGrid()
@@ -236,23 +243,27 @@ def depthSearch(uzolStart,limit):
     front = [[uzolStart, limit]]
     front2 = [[limit]]
     while len(front) > 0:
-        if front[0][0].checkFin():
-            print(tmpCounter)
-            printFinish(front[0][0])
-            print(front2[0])
-
-            return True
+        # if front[0][0].checkFin():
+        #     print(tmpCounter)
+        #     printFinish(front[0][0])
+        #     print(front2[0])
+        #
+        #     return True
 
         uzol = front.pop(0)
+
 
         rad = front2.pop(0)
         tmpCounter+=1
 
         #uzol[0] == samotny uzol, uzol[1] je limit
-        if uzol[1] < 0 or rad[-1] < 0:  continue
 
         # random.shuffle(uzol[0].state)
         cpyTable, offset = uzolStart.recreateGrid(rad)
+        if checkFin(cpyTable, uzolStart.state[0], offset[0]):
+            print(rad)
+            return True
+        if rad[-1] < 0:  continue
 
         for car in range(len(uzol[0].state)):
 
